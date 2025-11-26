@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { currentUser } from './users';
 
 // Mock data - quelques tweets pour commencer
 const initialTweets = [
@@ -10,13 +11,14 @@ const initialTweets = [
     author_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
     content: 'Premier tweet sur notre nouvelle application Twitter-like avec Svelte ! 🚀',
     created_at: new Date('2025-11-12T14:30:00'),
-    likes: [],  // IDs des utilisateurs qui ont liké
-    retweets: [], // IDs des utilisateurs qui ont retweeté
+    likes: [], // IDs des utilisateurs qui ont liké
+    retweets: [], // IDs des utilisateurs qui ont retweete
     replies_count: 2,
     reply_to_id: null,
     is_retweet: false,
     original_tweet_id: null,
     retweeted_by: null,
+    image_url: null, // Nouvelle propriété pour les images
   },
   {
     id: 2,
@@ -33,6 +35,7 @@ const initialTweets = [
     is_retweet: false,
     original_tweet_id: null,
     retweeted_by: null,
+    image_url: null,
   },
   {
     id: 3,
@@ -49,34 +52,25 @@ const initialTweets = [
     is_retweet: false,
     original_tweet_id: null,
     retweeted_by: null,
+    image_url: null,
   },
 ];
 
 // Store pour les tweets
 export const tweets = writable(initialTweets);
 
-// Store pour l'utilisateur connecté
-export const currentUser = writable({
-  id: 1,
-  username: 'alice_dev',
-  display_name: 'Alice Dupont',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
-  bio: 'Développeuse passionnée par Svelte et le web moderne 🚀',
-  followers_count: 142,
-  following_count: 89,
-  tweets_count: 234,
-  joined_date: 'Novembre 2024',
-});
-
-// Fonction pour ajouter un tweet
-export function addTweet(content, replyToId = null) {
+// Fonction pour ajouter un tweet (avec image optionnelle)
+export function addTweet(content, replyToId = null, imageUrl = null) {
+  let user;
+  currentUser.subscribe(value => user = value)();
+  
   tweets.update(currentTweets => {
     const newTweet = {
       id: Date.now(),
-      author_id: 1,
-      author_name: 'Alice Dupont',
-      author_username: 'alice_dev',
-      author_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
+      author_id: user.id,
+      author_name: user.display_name,
+      author_username: user.username,
+      author_avatar: user.avatar,
       content,
       created_at: new Date(),
       likes: [],
@@ -86,6 +80,7 @@ export function addTweet(content, replyToId = null) {
       is_retweet: false,
       original_tweet_id: null,
       retweeted_by: null,
+      image_url: imageUrl,
     };
     
     // Si c'est une réponse, incrémenter le compteur
@@ -102,7 +97,7 @@ export function addTweet(content, replyToId = null) {
   });
 }
 
-// Fonction pour toggle le like (like/unlike) - FIX DU PROBLÈME!
+// Fonction pour toggle le like (like/unlike)
 export function toggleLike(tweetId, userId) {
   tweets.update(currentTweets => {
     return currentTweets.map(tweet => {
@@ -113,8 +108,8 @@ export function toggleLike(tweetId, userId) {
         return {
           ...tweet,
           likes: hasLiked
-            ? likes.filter(id => id !== userId)  // Unlike - retirer
-            : [...likes, userId]  // Like - ajouter
+            ? likes.filter(id => id !== userId) // Unlike - retirer
+            : [...likes, userId] // Like - ajouter
         };
       }
       return tweet;
@@ -122,7 +117,7 @@ export function toggleLike(tweetId, userId) {
   });
 }
 
-// Fonction pour retweet/republier - AVEC MESSAGE "Alice Dupont a republié"
+// Fonction pour retweet/republier
 export function toggleRetweet(tweetId, userId, userName) {
   tweets.update(currentTweets => {
     const originalTweet = currentTweets.find(t => t.id === tweetId && !t.is_retweet);
@@ -132,7 +127,7 @@ export function toggleRetweet(tweetId, userId, userName) {
     const hasRetweeted = retweets.includes(userId);
     
     if (hasRetweeted) {
-      // Annuler le retweet - supprimer le tweet retweeté
+      // Annuler le retweet - supprimer le tweet retweete
       const filtered = currentTweets.filter(t => 
         !(t.is_retweet && t.original_tweet_id === tweetId && t.author_id === userId)
       );
@@ -157,7 +152,7 @@ export function toggleRetweet(tweetId, userId, userName) {
         retweeted_by: {
           id: userId,
           name: userName,
-          username: 'alice_dev'
+          username: originalTweet.author_username
         },
         created_at: new Date()
       };
@@ -181,4 +176,13 @@ export function toggleRetweet(tweetId, userId, userName) {
 // Fonction pour répondre à un tweet
 export function replyToTweet(tweetId, content) {
   addTweet(content, tweetId);
+}
+
+// Fonction pour obtenir les commentaires d'un tweet
+export function getTweetReplies(tweetId) {
+  let replies = [];
+  tweets.subscribe(allTweets => {
+    replies = allTweets.filter(tweet => tweet.reply_to_id === tweetId);
+  })();
+  return replies;
 }
