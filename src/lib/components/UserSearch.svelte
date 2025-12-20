@@ -41,7 +41,7 @@
       class="search-input"
     />
     {#if searchQuery}
-      <button class="clear-btn" on:click={() => searchQuery = ''}>
+      <button class="clear-btn" on:click={() => searchQuery = ''} aria-label="Effacer la recherche">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
           <path d="M13.414 12l5.793-5.793c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0L12 10.586 6.207 4.793c-.39-.39-1.023-.39-1.414 0s-.39 1.023 0 1.414L10.586 12l-5.793 5.793c-.39.39-.39 1.023 0 1.414.195.195.45.293.707.293s.512-.098.707-.293L12 13.414l5.793 5.793c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L13.414 12z"/>
         </svg>
@@ -53,7 +53,7 @@
     <div class="results-container">
       {#each searchResults as user}
         <div class="result-item">
-          <div class="user-info" on:click={() => handleViewProfile(user)}>
+          <button class="user-info" on:click={() => handleViewProfile(user)}>
             <img src={user.avatar} alt={user.display_name} class="result-avatar" />
             <div class="user-details">
               <div class="result-name">{user.display_name}</div>
@@ -62,7 +62,7 @@
                 <div class="result-bio">{user.bio}</div>
               {/if}
             </div>
-          </div>
+          </button>
           <button 
             class="follow-btn-result {isFollowing($currentUser.id, user.id) ? 'following' : ''}"
             on:click={() => handleFollowToggle(user.id)}
@@ -172,7 +172,17 @@
     display: flex;
     gap: 12px;
     flex: 1;
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: left;
     cursor: pointer;
+    font: inherit;
+  }
+
+  .user-info:focus {
+    outline: 2px solid #1da1f2;
+    outline-offset: -2px;
   }
   
   .result-avatar {
@@ -209,6 +219,7 @@
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
   }
   

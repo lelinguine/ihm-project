@@ -213,14 +213,14 @@
         </div>
         
         <div class="profile-stats">
-          <div class="stat">
-            <button class="stat-value-btn" on:click={openFollowingModal} aria-label="Voir les abonnements">{user.following_count}</button>
+          <button class="stat" on:click={openFollowingModal} aria-label="Voir les abonnements">
+            <span class="stat-value">{user.following_count}</span>
             <span class="stat-label">Abonnements</span>
-          </div>
-          <div class="stat">
-            <button class="stat-value-btn" on:click={openFollowersModal} aria-label="Voir les abonnés">{user.followers_count}</button>
+          </button>
+          <button class="stat" on:click={openFollowersModal} aria-label="Voir les abonnés">
+            <span class="stat-value">{user.followers_count}</span>
             <span class="stat-label">Abonnés</span>
-          </div>
+          </button>
           <div class="stat">
             <span class="stat-value">{user.tweets_count}</span>
             <span class="stat-label">Tweets</span>
@@ -428,34 +428,28 @@
   .stat {
     display: flex;
     gap: 4px;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
     cursor: pointer;
+    transition: opacity 0.2s;
   }
 
-  .stat:hover .stat-value {
+  button.stat:hover {
+    opacity: 0.8;
+  }
+
+  button.stat:hover .stat-value {
     text-decoration: underline;
+    color: #1d9bf0;
   }
 
   .stat-value {
     font-weight: 700;
     font-size: 15px;
     color: #14171a;
-  }
-
-  .stat-value-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    font: inherit;
-    color: #14171a;
-    font-weight: 700;
-    font-size: 15px;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-  .stat-value-btn:hover {
-    color: #1d9bf0;
-    text-decoration: underline;
   }
 
   .stat-label {
@@ -593,64 +587,6 @@
   .user-tweets {
     display: flex;
     flex-direction: column;
-  }
-  
-  .user-tweet-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid #e1e8ed;
-    transition: background-color 0.2s;
-  }
-  
-  .user-tweet-item:hover {
-    background-color: #f7f9fa;
-  }
-  
-  .tweet-avatar-small {
-    flex-shrink: 0;
-  }
-  
-  .tweet-avatar-small img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-  }
-  
-  .tweet-content-small {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .tweet-header-small {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 4px;
-  }
-  
-  .tweet-name {
-    font-weight: 700;
-    color: #14171a;
-    font-size: 14px;
-  }
-  
-  .tweet-username {
-    color: #657786;
-    font-size: 14px;
-  }
-  
-  .tweet-date {
-    color: #657786;
-    font-size: 13px;
-    margin-left: auto;
-  }
-  
-  .tweet-text {
-    color: #14171a;
-    font-size: 14px;
-    line-height: 1.5;
-    margin: 0;
   }
   
   .no-tweets {

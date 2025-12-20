@@ -4,7 +4,6 @@
   
   export let tweet;
   export let onReply; // callback optionnel
-  export let showThread = false; // Pour afficher/masquer les réponses
   export let onViewProfile; // Callback optionnel pour changer de vue
   
   let isThreadExpanded = false;
@@ -208,12 +207,6 @@
     flex-wrap: wrap;
   }
 
-  .author-name {
-    font-weight: 700;
-    color: #14171a;
-    font-size: 15px;
-  }
-
   .author-name-btn,
   .author-username-btn {
     background: none;
@@ -236,11 +229,6 @@
     text-decoration: underline;
   }
 
-  .author-username {
-    color: #657786;
-    font-size: 15px;
-  }
-  
   .author-username-btn {
     color: #657786;
     font-size: 15px;

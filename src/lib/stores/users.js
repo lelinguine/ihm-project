@@ -5,12 +5,12 @@ import { updateUserTweets } from './tweets';
 const initialUsers = [
   {
     id: 1,
-    username: 'alice_dev',
-    first_name: 'Alice',
-    last_name: 'Dupont',
-    display_name: 'Alice Dupont',
+    username: 'M2MIASHS',
+    first_name: 'Etudiant',
+    last_name: 'MIASHS',
+    display_name: 'Etudiant MIASHS',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
-    bio: 'Développeuse passionnée par Svelte et le web moderne 🚀',
+    bio: 'étudiant en train de faire un projet',
     followers_count: 0,
     following_count: 0,
     tweets_count: 1,
@@ -23,7 +23,7 @@ const initialUsers = [
     last_name: 'Martin',
     display_name: 'Bob Martin',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob',
-    bio: 'Développeur fullstack | React & Node.js 💻',
+    bio: 'Développeur fullstack | React & Node.js',
     followers_count: 0,
     following_count: 0,
     tweets_count: 1,
@@ -36,7 +36,7 @@ const initialUsers = [
     last_name: 'Fontaine',
     display_name: 'Claire Fontaine',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claire',
-    bio: 'UX Designer | Creating beautiful experiences ✨',
+    bio: 'UX Designer | Creating beautiful experiences',
     followers_count: 0,
     following_count: 0,
     tweets_count: 0,
@@ -49,7 +49,7 @@ const initialUsers = [
     last_name: 'Kitchen',
     display_name: 'Alex Kitchen',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-    bio: 'Chef de projet tech | Passionné par l\'innovation 🚀',
+    bio: 'Chef de projet tech | Passionné par l\'innovation',
     followers_count: 0,
     following_count: 0,
     tweets_count: 1,
@@ -62,7 +62,7 @@ const initialUsers = [
     last_name: 'Morand',
     display_name: 'Jeremy Morand',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jeremy',
-    bio: 'Développeur mobile | Flutter & React Native 📱',
+    bio: 'Développeur mobile | Flutter & React Native',
     followers_count: 0,
     following_count: 0,
     tweets_count: 1,
@@ -75,7 +75,7 @@ const initialUsers = [
     last_name: 'Testeur',
     display_name: 'LE_TESTEUR',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Testeur',
-    bio: '🤖 Bot de test | Abonné à tous | Tous abonnés à moi 🔁',
+    bio: 'Bot de test | Abonné à tous | Tous abonnés à moi',
     followers_count: 5,
     following_count: 5,
     tweets_count: 2,
@@ -320,3 +320,6 @@ export function isFollowing(currentUserId, targetUserId) {
   })();
   return result;
 }
+
+// Initialiser les compteurs au chargement
+updateFollowCounts();

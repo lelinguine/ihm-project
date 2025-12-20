@@ -305,10 +305,6 @@
     color: #657786;
   }
   
-  .characters-left.warning {
-    color: #e0245e;
-  }
-  
   .tweet-button {
     background-color: #1da1f2;
     color: white;
