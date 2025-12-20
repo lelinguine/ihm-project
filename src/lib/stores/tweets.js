@@ -1,5 +1,5 @@
 import { writable, get } from 'svelte/store';
-import { currentUser } from './users';
+import { currentUser, incrementTweetsCount, decrementTweetsCount } from './users';
 export { currentUser };
 
 // Mock data - quelques tweets pour commencer
@@ -12,14 +12,14 @@ const initialTweets = [
     author_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
     content: 'Premier tweet sur notre nouvelle application Twitter-like avec Svelte ! 🚀',
     created_at: new Date('2025-11-12T14:30:00'),
-    likes: [], // IDs des utilisateurs qui ont liké
-    retweets: [], // IDs des utilisateurs qui ont retweete
-    replies_count: 2,
+    likes: [],
+    retweets: [],
+    replies_count: 0,
     reply_to_id: null,
     is_retweet: false,
     original_tweet_id: null,
     retweeted_by: null,
-    image_url: null, // Nouvelle propriété pour les images
+    image_url: null,
   },
   {
     id: 2,
@@ -31,7 +31,7 @@ const initialTweets = [
     created_at: new Date('2025-11-12T15:00:00'),
     likes: [1],
     retweets: [],
-    replies_count: 1,
+    replies_count: 0,
     reply_to_id: null,
     is_retweet: false,
     original_tweet_id: null,
@@ -39,17 +39,68 @@ const initialTweets = [
     image_url: null,
   },
   {
-    id: 3,
-    author_id: 1,
-    author_name: 'Alice Dupont',
-    author_username: 'alice_dev',
-    author_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
-    content: '@bob_code Exactement ! Pas besoin de useState ou useEffect, tout est tellement plus simple.',
-    created_at: new Date('2025-11-12T15:15:00'),
-    likes: [2],
+    id: 4,
+    author_id: 4,
+    author_name: 'Alex Kitchen',
+    author_username: 'alex_kitchen',
+    author_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+    content: 'Lancement de notre nouveau projet cette semaine ! Très excité par les challenges à venir 💪',
+    created_at: new Date('2025-11-13T09:30:00'),
+    likes: [1, 2],
     retweets: [],
     replies_count: 0,
-    reply_to_id: 2,
+    reply_to_id: null,
+    is_retweet: false,
+    original_tweet_id: null,
+    retweeted_by: null,
+    image_url: null,
+  },
+  {
+    id: 5,
+    author_id: 5,
+    author_name: 'Jeremy Morand',
+    author_username: 'jeremy_morand',
+    author_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jeremy',
+    content: 'Flutter 3.16 vient de sortir ! Les nouvelles fonctionnalités sont impressionnantes 📱✨',
+    created_at: new Date('2025-11-13T10:00:00'),
+    likes: [1, 4],
+    retweets: [],
+    replies_count: 0,
+    reply_to_id: null,
+    is_retweet: false,
+    original_tweet_id: null,
+    retweeted_by: null,
+    image_url: null,
+  },
+  {
+    id: 6,
+    author_id: 6,
+    author_name: 'LE_TESTEUR',
+    author_username: 'le_testeur',
+    author_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Testeur',
+    content: '🤖 Bienvenue sur mon profil ! Je suis là pour tester les fonctionnalités du réseau social. N\'hésitez pas à interagir avec mes tweets !',
+    created_at: new Date('2025-12-01T12:00:00'),
+    likes: [1, 2, 3],
+    retweets: [],
+    replies_count: 0,
+    reply_to_id: null,
+    is_retweet: false,
+    original_tweet_id: null,
+    retweeted_by: null,
+    image_url: null,
+  },
+  {
+    id: 7,
+    author_id: 6,
+    author_name: 'LE_TESTEUR',
+    author_username: 'le_testeur',
+    author_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Testeur',
+    content: '✅ Test des abonnements : Si vous voyez ce message, c\'est que tout fonctionne ! Likez pour confirmer 👍',
+    created_at: new Date('2025-12-10T15:30:00'),
+    likes: [1, 2, 4, 5],
+    retweets: [],
+    replies_count: 0,
+    reply_to_id: null,
     is_retweet: false,
     original_tweet_id: null,
     retweeted_by: null,
@@ -95,6 +146,9 @@ export function addTweet(content, replyToId = null, imageUrl = null) {
     
     return [newTweet, ...currentTweets];
   });
+  
+  // Mettre à jour le compteur de tweets de l'utilisateur
+  incrementTweetsCount(user.id);
 }
 
 // Fonction pour toggle le like (like/unlike)
@@ -201,4 +255,21 @@ export function updateUserTweets(userId, userUpdates) {
       return tweet;
     })
   );
+}
+
+// Fonction pour supprimer un tweet
+export function deleteTweet(tweetId) {
+  let deletedAuthorId;
+  tweets.update(allTweets => {
+    const tweetToDelete = allTweets.find(t => t.id === tweetId);
+    if (tweetToDelete) {
+      deletedAuthorId = tweetToDelete.author_id;
+    }
+    return allTweets.filter(tweet => tweet.id !== tweetId);
+  });
+  
+  // Mettre à jour le compteur de tweets (décrémenter)
+  if (deletedAuthorId) {
+    decrementTweetsCount(deletedAuthorId);
+  }
 }

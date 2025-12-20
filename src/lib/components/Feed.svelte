@@ -3,7 +3,9 @@
   import TweetComposer from './TweetComposer.svelte';
   import { tweets } from '$lib/stores/tweets';
 
-  let replyingToTweet = null;
+  export let onViewProfile = null;
+
+  let replyingToTweet = null; // objet tweet ou null
 
   function handleReply(tweet) {
     replyingToTweet = tweet;
@@ -16,7 +18,7 @@
 
 <div class="feed">
   {#if replyingToTweet}
-    <div class="reply-overlay" on:click={closeReply}>
+    <div class="reply-overlay" role="dialog" aria-modal="true" on:click={closeReply} on:keydown={(e) => e.key === 'Escape' && closeReply()} tabindex="0">
       <div class="reply-modal" on:click|stopPropagation>
         <div class="original-tweet">
           <TweetCard tweet={replyingToTweet} />
@@ -27,7 +29,7 @@
   {/if}
   
   {#each $tweets as tweet (tweet.id)}
-    <TweetCard {tweet} onReply={handleReply} />
+    <TweetCard {tweet} onReply={handleReply} {onViewProfile} />
   {/each}
 </div>
 

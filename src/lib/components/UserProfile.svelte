@@ -1,9 +1,34 @@
 <script>
-  import { currentUser } from '$lib/stores/tweets';
-  import { updateCurrentUserProfile } from '$lib/stores/users';
+  import { currentUser } from '$lib/stores/users';
+  import { viewedUser, updateCurrentUserProfile, viewOwnProfile, toggleFollow, isFollowing, followings, users, viewUserProfile } from '$lib/stores/users';
+  import { tweets } from '$lib/stores/tweets';
+  import TweetCard from './TweetCard.svelte';
+    import FollowersModal from './FollowersModal.svelte';
   
-  let user;
-  currentUser.subscribe(value => user = value);
+  let user = $viewedUser;
+  let isOwnProfile = true;
+  let userTweets = [];
+  let currentUserId = $currentUser.id;
+  let isUserFollowing = false;
+  
+  // Mise à jour réactive de tous les changements
+  $: if ($currentUser && $viewedUser && $followings && $users) {
+    currentUserId = $currentUser.id;
+    user = $viewedUser;
+    isOwnProfile = $currentUser.id === $viewedUser.id;
+    isUserFollowing = isFollowing($currentUser.id, $viewedUser.id);
+    
+    // Recharger les données actualisées du viewedUser
+    const updatedUser = $users.find(u => u.id === $viewedUser.id);
+    if (updatedUser) {
+      user = updatedUser;
+    }
+  }
+  
+  // Filtrer les tweets de l'utilisateur (incluant les retweets)
+  $: if (user && $tweets) {
+    userTweets = $tweets.filter(tweet => tweet.author_id === user.id);
+  }
   
   let isEditing = false;
   let editForm = {
@@ -11,6 +36,14 @@
     username: '',
     bio: '',
   };
+  
+  function handleFollowToggle() {
+    if (currentUserId && user && user.id) {
+      toggleFollow(currentUserId, user.id);
+      // Mettre à jour la réactivité
+      isUserFollowing = isFollowing(currentUserId, user.id);
+    }
+  }
   
   function startEditing() {
     isEditing = true;
@@ -40,6 +73,42 @@
     
     isEditing = false;
   }
+  
+  function goBack() {
+    viewOwnProfile();
+  }
+
+  // État du modal (au niveau du composant)
+  let showFollowersModal = false;
+  let showFollowingModal = false;
+  let modalFollowerIds = [];
+  let modalFollowingIds = [];
+
+  // Mettre à jour les listes pour les modals
+  $: if ($followings && user) {
+    modalFollowerIds = Object.keys($followings)
+      .filter(id => $followings[id]?.includes(user.id))
+      .map(id => parseInt(id));
+
+    modalFollowingIds = $followings[user.id] || [];
+  }
+
+  function openFollowersModal() {
+    showFollowersModal = true;
+  }
+
+  function openFollowingModal() {
+    showFollowingModal = true;
+  }
+
+  function closeModals() {
+    showFollowersModal = false;
+    showFollowingModal = false;
+  }
+
+  function handleViewProfile(user) {
+    viewUserProfile(user.id);
+  }
 </script>
 
 <div class="profile">
@@ -49,13 +118,26 @@
     <div class="profile-header">
       <div class="header-top">
         <img src="{user.avatar}" alt="{user.display_name}" class="profile-avatar" />
-        {#if !isEditing}
+        {#if isOwnProfile && !isEditing}
           <button class="edit-btn" on:click={startEditing}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
               <path d="M3 12.001h10.39L9.702 6.662c-.366-.366-.366-.952 0-1.318.366-.366.952-.366 1.318 0l6.36 6.36c.366.366.366.952 0 1.318l-6.36 6.36c-.366.366-.952.366-1.318 0-.366-.366-.366-.952 0-1.318l3.688-3.688H3c-.517 0-.932-.415-.932-.932s.415-.932.932-.932z"/>
             </svg>
             Modifier le profil
           </button>
+        {/if}
+        {#if !isOwnProfile}
+          <div class="profile-actions-group">
+            <button class="back-btn" on:click={goBack}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 3l-9 9 9 9 1.41-1.41L7.83 13H20v-2z"/>
+              </svg>
+              Retour
+            </button>
+            <button class="follow-btn {isUserFollowing ? 'following' : ''}" on:click={handleFollowToggle}>
+              {isUserFollowing ? 'Ne plus suivre' : 'Suivre'}
+            </button>
+          </div>
         {/if}
       </div>
     </div>
@@ -132,11 +214,11 @@
         
         <div class="profile-stats">
           <div class="stat">
-            <span class="stat-value">{user.following_count}</span>
+            <button class="stat-value-btn" on:click={openFollowingModal} aria-label="Voir les abonnements">{user.following_count}</button>
             <span class="stat-label">Abonnements</span>
           </div>
           <div class="stat">
-            <span class="stat-value">{user.followers_count}</span>
+            <button class="stat-value-btn" on:click={openFollowersModal} aria-label="Voir les abonnés">{user.followers_count}</button>
             <span class="stat-label">Abonnés</span>
           </div>
           <div class="stat">
@@ -144,10 +226,42 @@
             <span class="stat-label">Tweets</span>
           </div>
         </div>
+        
+        {#if userTweets.length > 0}
+          <div class="tweets-section">
+            <h2 class="tweets-title">Tweets de {user.display_name}</h2>
+            <div class="user-tweets">
+              {#each userTweets as tweet (tweet.id)}
+                <TweetCard {tweet} />
+              {/each}
+            </div>
+          </div>
+        {:else}
+          <div class="no-tweets">
+            <p>Aucun tweet pour le moment</p>
+          </div>
+        {/if}
       {/if}
     </div>
   </div>
 </div>
+
+<!-- Modals -->
+<FollowersModal 
+  isOpen={showFollowersModal}
+  userIds={modalFollowerIds}
+  title="Abonnés"
+  onClose={closeModals}
+  onViewProfile={handleViewProfile}
+/>
+
+<FollowersModal 
+  isOpen={showFollowingModal}
+  userIds={modalFollowingIds}
+  title="Abonnements"
+  onClose={closeModals}
+  onViewProfile={handleViewProfile}
+/>
 
 <style>
   .profile {
@@ -210,6 +324,60 @@
   .edit-btn:hover {
     background-color: #e8f5fe;
   }
+  
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: white;
+    border: 2px solid #1da1f2;
+    color: #1da1f2;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 8px;
+  }
+  
+  .back-btn:hover {
+    background-color: #e8f5fe;
+  }
+  
+  .profile-actions-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .follow-btn {
+    padding: 8px 24px;
+    background-color: #14171a;
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .follow-btn:hover {
+    background-color: #272c30;
+  }
+  
+  .follow-btn.following {
+    background-color: white;
+    color: #14171a;
+    border: 2px solid #cfd9de;
+  }
+  
+  .follow-btn.following:hover {
+    background-color: #fef0f1;
+    color: #f4212e;
+    border-color: #fdc9ce;
+  }
 
   .profile-info {
     margin-bottom: 16px;
@@ -271,6 +439,23 @@
     font-weight: 700;
     font-size: 15px;
     color: #14171a;
+  }
+
+  .stat-value-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: #14171a;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .stat-value-btn:hover {
+    color: #1d9bf0;
+    text-decoration: underline;
   }
 
   .stat-label {
@@ -390,5 +575,87 @@
   
   .save-btn:hover {
     background-color: #1a91da;
+  }
+  
+  /* Styles pour les tweets de l'utilisateur */
+  .tweets-section {
+    padding-top: 16px;
+    border-top: 1px solid #e1e8ed;
+  }
+  
+  .tweets-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #14171a;
+    margin: 16px 0;
+  }
+  
+  .user-tweets {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-tweet-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e8ed;
+    transition: background-color 0.2s;
+  }
+  
+  .user-tweet-item:hover {
+    background-color: #f7f9fa;
+  }
+  
+  .tweet-avatar-small {
+    flex-shrink: 0;
+  }
+  
+  .tweet-avatar-small img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+  
+  .tweet-content-small {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .tweet-header-small {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  
+  .tweet-name {
+    font-weight: 700;
+    color: #14171a;
+    font-size: 14px;
+  }
+  
+  .tweet-username {
+    color: #657786;
+    font-size: 14px;
+  }
+  
+  .tweet-date {
+    color: #657786;
+    font-size: 13px;
+    margin-left: auto;
+  }
+  
+  .tweet-text {
+    color: #14171a;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+  }
+  
+  .no-tweets {
+    padding: 32px 16px;
+    text-align: center;
+    color: #657786;
   }
 </style>
