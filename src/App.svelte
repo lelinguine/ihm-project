@@ -2,7 +2,7 @@
   import TweetComposer from '$lib/components/TweetComposer.svelte';
   import Feed from '$lib/components/Feed.svelte';
   import UserProfile from '$lib/components/UserProfile.svelte';
-  import { currentUser } from '$lib/stores/tweets';
+  import { currentUser } from '$lib/stores/users';
   
   let currentView = 'feed'; // 'feed' ou 'profile'
   let user;

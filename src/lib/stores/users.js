@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { updateUserTweets } from './tweets';
 
 // Mock data - quelques utilisateurs pour commencer
 const initialUsers = [
@@ -65,6 +66,9 @@ export function updateCurrentUserProfile(updates) {
       return u;
     })
   );
+  
+  // Mettre à jour les tweets de cet utilisateur
+  updateUserTweets(updates.id, updates);
 }
 
 // Fonction pour rechercher des utilisateurs par nom, prénom ou pseudo

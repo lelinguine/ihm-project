@@ -186,3 +186,19 @@ export function getTweetReplies(tweetId) {
   })();
   return replies;
 }
+
+// Fonction pour mettre à jour les tweets d'un utilisateur quand son profil change
+export function updateUserTweets(userId, userUpdates) {
+  tweets.update(allTweets => 
+    allTweets.map(tweet => {
+      if (tweet.author_id === userId) {
+        return {
+          ...tweet,
+          author_name: userUpdates.display_name || tweet.author_name,
+          author_username: userUpdates.username || tweet.author_username,
+        };
+      }
+      return tweet;
+    })
+  );
+}
