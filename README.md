@@ -1,8 +1,13 @@
+## Developers
+- Éric Tran : eric.tran@etu.univ-grenoble-alpes.fr</br>
+- Ayla DIONE : ayla.dione@etu.univ-grenoble-alpes.fr</br>
+- Valentin LUGINBUHL : valentin.luginbuhl@etu.univ-grenoble-alpes.fr</br>
+
+## Prerequisites
+- NodeJS : https://nodejs.org/en/download/
+
 # 📀 - Install
 Guide d'installation et de lancement de l'application web.
-
-### Download
-Télécharger NodeJS sur [le site](https://nodejs.org/fr).
 
 ### Move
 Déplacez-vous dans le dossier de l'application.
@@ -22,14 +27,5 @@ Lancer l'application.
 npm run dev
 ```
 
-# 💽 - UI Library
-Guide pour installer un nouveau UI composants de la librairie Shadcn.
-
-### Component
-```
-npx shadcn-svelte@latest add [component-name]
-```
-https://shadcn-svelte.com/docs/components
-
-### Help
-https://shadcn-svelte.com/
+# 💿 - Documentation
+Documentatioin disponible sur le wiki du projet : https://github.com/lelinguine/ihm-project/wiki

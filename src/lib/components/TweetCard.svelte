@@ -138,8 +138,8 @@
         </button>
         
         {#if tweet.author_id === $currentUser.id}
-          <button class="action-btn delete-btn" on:click={handleDelete} aria-label="Supprimer le tweet">
-            SUPPR
+          <button class="action-btn delete-btn s-gLms4qaaw-tX" on:click={handleDelete} aria-label="Supprimer le tweet">
+            Supprimer
           </button>
         {/if}
       </div>
@@ -315,16 +315,24 @@
     width: 18px;
     height: 18px;
   }
-  
+
   .delete-btn {
-    color: #14171a;
-    font-size: 13px;
-    font-weight: 400;
-    padding: 4px 8px;
+    margin-left: calc(14.5rem - 16px);
+    background-color: #e0245e;
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    padding: 8px 16px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
   }
   
   .delete-btn:hover {
-    color: #657786;
-    background-color: #f7f9fa;
+    color: white;
+    background-color: #cc2157;
   }
+  
+
 </style>

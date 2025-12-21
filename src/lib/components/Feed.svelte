@@ -19,7 +19,7 @@
 <div class="feed">
   {#if replyingToTweet}
     <div class="reply-overlay" role="dialog" aria-modal="true" on:click={closeReply} on:keydown={(e) => e.key === 'Escape' && closeReply()} tabindex="0">
-      <div class="reply-modal" role="document" on:click|stopPropagation on:keydown|stopPropagation>
+      <div class="reply-modal" role="button" tabindex="0" on:click|stopPropagation on:keydown|stopPropagation>
         <div class="original-tweet">
           <TweetCard tweet={replyingToTweet} />
         </div>
