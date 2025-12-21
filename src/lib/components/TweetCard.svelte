@@ -317,7 +317,7 @@
   }
 
   .delete-btn {
-    margin-left: calc(14.5rem - 16px);
+    margin-left: auto;
     background-color: #e0245e;
     color: white;
     border: none;
