@@ -2,6 +2,9 @@
   import { addTweet } from '$lib/stores/tweets';
   import { currentUser } from '$lib/stores/users';
   
+  export let replyTo; // Tweet auquel on répond (optionnel)
+  export let onCancel; // Fonction pour annuler la réponse (optionnel)
+  
   let content = '';
   let isSubmitting = false;
   let imageUrl = '';
@@ -14,12 +17,24 @@
   $: progressColor = charactersLeft < 20 ? '#e0245e' : charactersLeft < 40 ? '#ffad1f' : '#1da1f2';
   
   async function handleSubmit() {
-    if (!isValid || isSubmitting) return;
+    console.log('handleSubmit appelé');
+    console.log('isValid:', isValid);
+    console.log('isSubmitting:', isSubmitting);
+    console.log('content:', content);
+    
+    if (!isValid || isSubmitting) {
+      console.log('Validation échouée ou déjà en cours de soumission');
+      return;
+    }
     
     isSubmitting = true;
     
     try {
-      addTweet(content.trim(), null, imagePreview);
+      const replyToId = replyTo ? replyTo.id : null;
+      console.log('Appel de addTweet avec:', content.trim(), replyToId, imagePreview);
+      addTweet(content.trim(), replyToId, imagePreview);
+      console.log('Tweet ajouté avec succès');
+      
       content = '';
       imageUrl = '';
       imageFile = null;
@@ -27,10 +42,23 @@
       
       // Animation de succès
       showSuccessMessage();
+      
+      // Si on est en mode réponse, appeler onCancel pour fermer le composeur
+      if (replyTo && onCancel) {
+        onCancel();
+      }
     } catch (error) {
       console.error('Erreur lors de la publication:', error);
     } finally {
       isSubmitting = false;
+    }
+  }
+  
+  function handleCancel() {
+    if (onCancel) {
+      content = '';
+      imagePreview = null;
+      onCancel();
     }
   }
   
@@ -62,14 +90,24 @@
   }
 </script>
 
-<div class="tweet-composer">
+<div class="tweet-composer" class:reply-mode={replyTo}>
+  {#if replyTo}
+    <div class="replying-to">
+      <span class="reply-label">Réponse à <strong>@{replyTo.author_username}</strong></span>
+      <button class="close-reply" on:click={handleCancel} aria-label="Fermer la réponse">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M13.414 12l5.793-5.793c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0L12 10.586 6.207 4.793c-.39-.39-1.023-.39-1.414 0s-.39 1.023 0 1.414L10.586 12l-5.793 5.793c-.39.39-.39 1.023 0 1.414.195.195.45.293.707.293s.512-.098.707-.293L12 13.414l5.793 5.793c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L13.414 12z"/>
+        </svg>
+      </button>
+    </div>
+  {/if}
   <div class="composer-header">
     <img src={$currentUser.avatar} alt={$currentUser.display_name} class="user-avatar" />
     
     <div class="composer-content">
       <textarea
         bind:value={content}
-        placeholder="Quoi de neuf ?"
+        placeholder={replyTo ? "Tweetez votre réponse" : "Quoi de neuf ?"}
         class="tweet-input"
         maxlength="280"
         rows="3"
@@ -77,8 +115,8 @@
       
       {#if imagePreview}
         <div class="image-preview">
-          <img src={imagePreview} alt="Preview" />
-          <button class="remove-image" on:click={removeImage}>
+          <img src={imagePreview} alt="Aperçu du média" />
+          <button class="remove-image" on:click={removeImage} aria-label="Retirer l'image">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
               <path d="M13.414 12l5.793-5.793c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0L12 10.586 6.207 4.793c-.39-.39-1.023-.39-1.414 0s-.39 1.023 0 1.414L10.586 12l-5.793 5.793c-.39.39-.39 1.023 0 1.414.195.195.45.293.707.293s.512-.098.707-.293L12 13.414l5.793 5.793c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L13.414 12z"/>
             </svg>
@@ -95,7 +133,7 @@
             on:change={handleFileChange}
             style="display: none;"
           />
-          <button class="icon-btn" on:click={handleImageSelect}>
+          <button class="icon-btn" on:click={handleImageSelect} aria-label="Sélectionner une image">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="#1da1f2">
               <path d="M19.75 2H4.25C3.01 2 2 3.01 2 4.25v15.5C2 20.99 3.01 22 4.25 22h15.5c1.24 0 2.25-1.01 2.25-2.25V4.25C22 3.01 20.99 2 19.75 2zM4.25 3.5h15.5c.413 0 .75.337.75.75v9.676l-3.858-3.858c-.14-.14-.33-.22-.53-.22h-.003c-.2 0-.393.08-.532.224l-4.317 4.384-1.813-1.806c-.14-.14-.33-.22-.53-.22-.193-.03-.395.08-.535.227L3.5 17.642V4.25c0-.413.337-.75.75-.75zm-.744 16.28l5.418-5.534 6.282 6.254H4.25c-.402 0-.727-.322-.744-.72zm16.244.72h-2.42l-5.007-4.987 3.792-3.85 4.385 4.384v3.703c0 .413-.337.75-.75.75z"/>
               <circle cx="8.868" cy="8.309" r="1.542"/>
@@ -267,10 +305,6 @@
     color: #657786;
   }
   
-  .characters-left.warning {
-    color: #e0245e;
-  }
-  
   .tweet-button {
     background-color: #1da1f2;
     color: white;
@@ -290,5 +324,48 @@
   .tweet-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+  
+  .reply-mode {
+    background-color: #f7f9fa;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .replying-to {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 8px 16px;
+    background-color: #fff;
+    border-bottom: 1px solid #e1e8ed;
+  }
+  
+  .reply-label {
+    font-size: 13px;
+    color: #657786;
+  }
+  
+  .reply-label strong {
+    color: #1da1f2;
+  }
+  
+  .close-reply {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 50%;
+    color: #657786;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  
+  .close-reply:hover {
+    background-color: #fee;
+    color: #e0245e;
   }
 </style>
